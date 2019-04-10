@@ -369,8 +369,10 @@ function RGBToColor(R, G, B: Byte): TColor;
 procedure RedGreenBlue(rgb: TColor; out Red, Green, Blue: Byte);
 {$ENDIF}
 
-
-procedure Filldword_(var x;count : BGRACardinal;value : BGRADWord);
+{$IFDEF BDS}
+procedure FillDWord(var x;count : BGRACardinal;value : BGRADWord);assembler;
+procedure FillWord(var x;count : BGRACardinal; value : BGRADWord);assembler;
+{$ENDIF}
 
 implementation
 
@@ -379,7 +381,9 @@ uses
   BGRABitmapTypes;
 {$IFEND}
 
-procedure filldword_(var x;count : BGRACardinal; value : BGRADWord);assembler;
+{$IFDEF BDS}
+
+procedure FillDWord(var x;count : BGRACardinal; value : BGRADWord);assembler;
 asm
   PUSH EDI
   MOV EDI, x
@@ -389,6 +393,32 @@ asm
   REP STOSD
   POP EDI
 end;
+{ //pure pascal for debug
+procedure FillDWord(var x;count : BGRACardinal; value : BGRADWord);
+var
+  wd:PBGRADWord;
+begin
+  wd:=Pointer(@x);
+  while count>0 do
+  begin
+    wd^:=value;
+    Inc(wd);
+    Dec(count);
+  end;
+end;
+}
+procedure FillWord(var x;count : BGRACardinal; value : BGRADWord);assembler;
+asm
+  PUSH EDI
+  MOV EDI, x
+  MOV EAX, value
+  MOV ECX, count
+  CLD
+  REP STOSW
+  POP EDI
+end;
+
+{$ENDIF}
 
 {$IF NOT DEFINED(FPC) AND DEFINED(BDS)}
 function CompareMethods(const m1, m2: TMethod): boolean;
@@ -527,25 +557,29 @@ begin
     Result := MathRound(BGRAInt64(nNumber) * BGRAInt64(nNumerator) / nDenominator);
 end;
 
-function Blue(rgb: TColorRef): BYTE; // does not work on system color
+function Blue(rgb: TColorRef): BYTE; // does not work on system color   //domingo ojo
 begin
-  Result := (rgb shr 16) and $000000ff;
+  //Result := (rgb shr 16) and $000000ff;
+  Result := rgb and $000000ff;
 end;
 
-function Green(rgb: TColorRef): BYTE; // does not work on system color
+function Green(rgb: TColorRef): BYTE; // does not work on system color   //domingo ojo
 begin
   Result := (rgb shr 8) and $000000ff;
 end;
 
-function Red(rgb: TColorRef): BYTE; // does not work on system color
+function Red(rgb: TColorRef): BYTE; // does not work on system color   //domingo ojo
 begin
-  Result := rgb and $000000ff;
+  //Result := rgb and $000000ff;
+  Result := (rgb shr 16) and $000000ff;
 end;
 
 function RGBToColor(R, G, B: Byte): TColor;
 begin
-  Result := (B shl 16) or (G shl 8) or R;
+   //Result := (B shl 16) or (G shl 8) or R;   //domingo ojo
+   Result := (R shl 16) or (G shl 8) or B;
 end;
+
 
 procedure RedGreenBlue(rgb: TColorRef; out Red, Green, Blue: Byte); // does not work on system color
 begin

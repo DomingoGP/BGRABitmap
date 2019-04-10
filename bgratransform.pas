@@ -1431,7 +1431,6 @@ var p: PBGRAPixel;
   ix,iy,shrMask,w,h: BGRANativeInt;
   py0: PByte;
   deltaRow: BGRANativeInt;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   w := FBitmap.Width;
   h := FBitmap.Height;
@@ -1441,8 +1440,7 @@ begin
   begin
     if mode = dmSet then
     begin//#
-      {$IFDEF BDS}move(BGRAPixelTransparent , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-      FillDWord_(pdest^, count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(BGRAPixelTransparent){$ENDIF});
+      FillDWord(pdest^, count, BGRADWord(BGRAPixelTransparent));
     end;
     exit;
   end;

@@ -1540,7 +1540,6 @@ end;
 procedure TBGRAGradientScanner.ScanPutPixels(pdest: PBGRAPixel; count: integer;
   mode: TDrawMode);
 var c, c2: TBGRAPixel;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if FRepeatHoriz then
   begin
@@ -1549,15 +1548,13 @@ begin
       dmDrawWithTransparency: DrawPixelsInline(pdest,c,count);
       dmLinearBlend: FastBlendPixelsInline(pdest,c,count);
       dmSet: begin//#
-               {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-               FillDWord_(pdest^,count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRALongWord(c){$ENDIF});
+               FillDWord(pdest^,count, LongWord(c));
              end;
       dmXor: XorInline(pdest,c,count);
       dmSetExceptTransparent: begin//#
                                 if c.alpha = 255 then
                                 begin
-                                  {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-                                  FillDWord_(pdest^,count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRALongWord(c){$ENDIF});
+                                 FillDWord(pdest^,count, LongWord(c));
                                 end;
                               end;
     end;
@@ -1585,8 +1582,7 @@ begin
       while count > 0 do
       begin//#
         c2 := ScanNextInline;
-        {$IFDEF BDS}move(c2 , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c2){$ENDIF};
+        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor BGRADWord(c2);
         inc(pdest);
         dec(count);
       end;

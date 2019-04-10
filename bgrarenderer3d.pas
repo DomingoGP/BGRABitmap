@@ -564,7 +564,7 @@ begin
   if FOptions.PerspectiveMode = pmZBuffer then
   begin
     Getmem(FZBuffer, FRenderSurface.NbPixels*sizeof(single));
-    FillDWord_(FZBuffer^, FRenderSurface.NbPixels, {$IFDEF OBJ}BGRADWord(single(0)){$ELSE}0{$ENDIF} );
+    FillDWord(FZBuffer^, FRenderSurface.NbPixels,{$IFDEF BDS}dword(0){$ELSE}dword(single(0)){$ENDIF});
   end
   else
     FZBuffer := nil;

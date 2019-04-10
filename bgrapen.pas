@@ -154,7 +154,6 @@ procedure BGRADrawLineAliased(dest: TBGRACustomBitmap; x1, y1, x2, y2: integer;
 var
   Y, X: integer;
   DX, DY, SX, SY, E: integer;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
   PixelProc: procedure (x, y: int32or64; c: TBGRAPixel) of object;
 begin
   if (Y1 = Y2) then
@@ -190,8 +189,7 @@ begin
   if c.alpha = 0 then
   begin//#
     if ADrawMode in[dmDrawWithTransparency,dmLinearBlend] then exit;
-    {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    if (ADrawMode = dmXor) and ({$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c){$ENDIF}=0) then exit;
+    if (ADrawMode = dmXor) and (BGRADWord(c)=0) then exit;
   end;
   case ADrawMode of
   dmDrawWithTransparency: PixelProc := {$IFDEF OBJ}@{$ENDIF}dest.DrawPixel;

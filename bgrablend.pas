@@ -487,7 +487,7 @@ begin
     scan.ScanPutPixels(pdest,count,mode) else
   begin
     {$IFDEF OBJ}
-    @scan.ScanNextPixel;
+    scanNextFunc := @scan.ScanNextPixel;
     {$ELSE}
     scanNextFunc := TBGRACustomBitmap(scan.GetInstance).ScanNextPixel;
     {$ENDIF}
@@ -528,24 +528,21 @@ begin
 end;
 
 procedure XorInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer);
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   while Count > 0 do
   begin
-    {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    PBGRADWord(dest)^ := PBGRADWord(dest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c){$ENDIF};
+    PDWord(dest)^ := PDWord(dest)^ xor DWord(c);
     Inc(dest);
     Dec(Count);
   end;
 end;
 
+
 procedure XorPixels(pdest, psrc: PBGRAPixel; count: integer);
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   while Count > 0 do
   begin
-    {$IFDEF BDS}move(pdest , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    PBGRADWord(pdest)^ := PBGRADWord(psrc)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF};
+    PDWord(pdest)^ := PDWord(psrc)^ xor PDWord(pdest)^;
     Inc(pdest);
     Inc(psrc);
     Dec(Count);
@@ -564,28 +561,9 @@ begin
   end;
 end;
 
-procedure FillInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer); {$ifdef inline}inline;{$endif}
-//  i : integer;
-  {$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
+procedure FillInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer);{$ifdef inline}inline;{$endif}
 begin
-{ for I := 0 to Count -1 do // run without asm
-  begin
-    dest^.blue  := c.blue;
-    dest^.green := c.green;
-    dest^.red   := c.red;
-    dest^.alpha := c.alpha;
-    inc(dest);
-  end;}
-  {$IFDEF BDS}
-    {$IFDEF FPC}
-    FillDWord_(dest^, Count, BGRADWord(c));
-    {$ELSE}
-    Move(c , _BGRADWord, sizeof(BGRADWord));
-    FillDWord_(dest^, Count, _BGRADWord);
-    {$ENDIF}
-  {$ELSE}
-  FillDWord(dest^, Count, BGRADWord(c));
-  {$ENDIF}
+  FillDWord(dest^, Count, longWord(c));
 end;
 
 procedure FastBlendPixelsInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer);
@@ -603,7 +581,6 @@ end;
 procedure PutPixels(pdest: PBGRAPixel; psource: PBGRAPixel; copycount: integer;
   mode: TDrawMode; AOpacity: byte);
 var i: integer; tempPixel: TBGRAPixel;
-{$IFDEF BDS}_BGRADWord, _BGRADWord2, _BGRADWord3 : BGRADWord;{$ENDIF}//#
 begin
   case mode of
     dmSet:
@@ -683,13 +660,7 @@ begin
       begin
           for i := copycount - 1 downto 0 do
           begin
-            {$IFDEF BDS}
-            move(pdest   , _BGRADWord , sizeof(BGRADWord));
-            move(psource , _BGRADWord2, sizeof(BGRADWord));
-            _BGRADWord3 := _BGRADWord xor _BGRADWord2;
-            move(_BGRADWord3 , tempPixel, sizeof(BGRADWord));
-            {$ENDIF}
-            FastBlendPixelInline(pdest,{$IFDEF BDS}tempPixel{$ELSE}TBGRAPixel(PBGRADWord(pdest)^ xor PBGRADWord(psource)^){$ENDIF}, AOpacity);//#
+            FastBlendPixelInline(pdest, TBGRAPixel(PDWord(pdest)^ xor PDword(psource)^), AOpacity);
             Inc(pdest);
             Inc(psource);
           end;
@@ -699,17 +670,16 @@ begin
   end;
 end;
 
+
 procedure DrawPixelsInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer);
 var
   n: integer;
   ec: TExpandedPixel;
-  {$IFDEF BDS} _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if c.alpha = 0 then exit;
   if c.alpha = 255 then
   begin
-    {$IFDEF BDS}move(dest , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    FillDWord_(dest^,count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRALongWord(c){$ENDIF});
+    filldword(dest^,count,longword(c));
     exit;
   end;
   ec := GammaExpansion(c);
@@ -725,14 +695,12 @@ procedure DrawExpandedPixelsInline(dest: PBGRAPixel; ec: TExpandedPixel;
 var
   n: integer;
   c: TBGRAPixel;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if ec.alpha < $0100 then exit;
   if ec.alpha >= $FF00 then
   begin
     c := GammaCompression(ec);
-    {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    FillDWord_(dest^,count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRALongWord(c){$ENDIF});
+    filldword(dest^,count,longword(c));
     exit;
   end;
   for n := Count - 1 downto 0 do
@@ -745,13 +713,11 @@ end;
 procedure DrawPixelsInlineExpandedOrNot(dest: PBGRAPixel; ec: TExpandedPixel; c: TBGRAPixel; Count: integer);
 var
   n: integer;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if c.alpha = 0 then exit;
   if c.alpha = 255 then
   begin
-    {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    FillDWord_(dest^,count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRALongWord(c){$ENDIF});
+    filldword(dest^,count,longword(c));
     exit;
   end;
   for n := Count - 1 downto 0 do
@@ -777,7 +743,7 @@ procedure DrawPixelInlineWithAlphaCheck(dest: PBGRAPixel; const c: TBGRAPixel);
 begin
   case c.alpha of
   0: ;
-  255: {$IFDEF BDS}move(C, dest^, sizeof(BGRADWord));{$ELSE} dest^ := c;{$ENDIF}
+  255: dest^ := c;
   else
     DrawPixelInlineNoAlphaCheck(dest,c);
   end;
@@ -828,7 +794,7 @@ procedure DrawPixelInlineExpandedOrNotWithAlphaCheck(dest: PBGRAPixel; const ec:
 begin
   case c.alpha of
   0: ;
-  255: {$IFDEF BDS}move(C, dest^, sizeof(BGRADWord));{$ELSE} dest^ := c;{$ENDIF}
+  255: dest^ := c;
   else
     DrawExpandedPixelInlineNoAlphaCheck(dest,ec,c.alpha);
   end;
@@ -836,18 +802,17 @@ end;
 
 procedure DrawPixelInlineNoAlphaCheck(dest: PBGRAPixel; const c: TBGRAPixel);
 var
-  a1f, a2f, a12, a12m, alphaCorr: BGRANativeUInt;
-  {$IFDEF BDS} _BGRADWord : BGRADWord;{$ENDIF}//#
+  a1f, a2f, a12, a12m, alphaCorr: NativeUInt;
 begin
   case dest^.alpha of
-    0: {$IFDEF BDS}move(C, dest^, sizeof(BGRADWord));{$ELSE} dest^ := c;{$ENDIF}
+    0: dest^ := c;
     255:
       begin
         alphaCorr := c.alpha;
-        if alphaCorr >= 128 then alphaCorr := alphaCorr +1;
-        dest^.red := GammaCompressionTab[(GammaExpansionTab[dest^.red] * BGRANativeUInt(256-alphaCorr) + GammaExpansionTab[c.red]*alphaCorr) shr 8];
-        dest^.green := GammaCompressionTab[(GammaExpansionTab[dest^.green] * BGRANativeUInt(256-alphaCorr) + GammaExpansionTab[c.green]*alphaCorr) shr 8];
-        dest^.blue := GammaCompressionTab[(GammaExpansionTab[dest^.blue] * BGRANativeUInt(256-alphaCorr) + GammaExpansionTab[c.blue]*alphaCorr) shr 8];
+        if alphaCorr >= 128 then alphaCorr := alphaCorr + 1;
+        dest^.red := GammaCompressionTab[(GammaExpansionTab[dest^.red] * NativeUInt(256-alphaCorr) + GammaExpansionTab[c.red]*alphaCorr) shr 8];
+        dest^.green := GammaCompressionTab[(GammaExpansionTab[dest^.green] * NativeUInt(256-alphaCorr) + GammaExpansionTab[c.green]*alphaCorr) shr 8];
+        dest^.blue := GammaCompressionTab[(GammaExpansionTab[dest^.blue] * NativeUInt(256-alphaCorr) + GammaExpansionTab[c.blue]*alphaCorr) shr 8];
       end;
     else
     begin
@@ -859,14 +824,13 @@ begin
       a1f := dest^.alpha * (not c.alpha);
       a2f := (c.alpha shl 8) - c.alpha;
 
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(dest)^{$ENDIF} := ((GammaCompressionTab[(GammaExpansionTab[dest^.red] * a1f +
+      PDWord(dest)^ := ((GammaCompressionTab[(GammaExpansionTab[dest^.red] * a1f +
                          GammaExpansionTab[c.red] * a2f + a12m) div a12]) shl TBGRAPixel_RedShift) or
                        ((GammaCompressionTab[(GammaExpansionTab[dest^.green] * a1f +
                          GammaExpansionTab[c.green] * a2f + a12m) div a12]) shl TBGRAPixel_GreenShift) or
                        ((GammaCompressionTab[(GammaExpansionTab[dest^.blue] * a1f +
                          GammaExpansionTab[c.blue] * a2f + a12m) div a12]) shl TBGRAPixel_BlueShift) or
                        (((a12 + a12 shr 7) shr 8) shl TBGRAPixel_AlphaShift);
-      {$IFDEF BDS}move(_BGRADWord, dest^, sizeof(BGRADWord));{$ENDIF}
     end;
   end;
 end;
@@ -874,8 +838,7 @@ end;
 procedure DrawExpandedPixelInlineNoAlphaCheck(dest: PBGRAPixel;
   const ec: TExpandedPixel; calpha: byte);
 var
-  a1f, a2f, a12, a12m, alphaCorr: BGRANativeUInt;
-  {$IFDEF BDS} _BGRADWord : BGRADWord;{$ENDIF}//#
+  a1f, a2f, a12, a12m, alphaCorr: NativeUInt;
 begin
   case dest^.alpha of
     0: begin
@@ -887,10 +850,10 @@ begin
     255:
       begin
         alphaCorr := calpha;
-        if alphaCorr >= 128 then alphaCorr := alphaCorr +1;
-        dest^.red := GammaCompressionTab[(GammaExpansionTab[dest^.red] * BGRANativeUInt(256-alphaCorr) + ec.red*alphaCorr) shr 8];
-        dest^.green := GammaCompressionTab[(GammaExpansionTab[dest^.green] * BGRANativeUInt(256-alphaCorr) + ec.green*alphaCorr) shr 8];
-        dest^.blue := GammaCompressionTab[(GammaExpansionTab[dest^.blue] * BGRANativeUInt(256-alphaCorr) + ec.blue*alphaCorr) shr 8];
+        if alphaCorr >= 128 then alphaCorr := alphaCorr + 1;
+        dest^.red := GammaCompressionTab[(GammaExpansionTab[dest^.red] * NativeUInt(256-alphaCorr) + ec.red*alphaCorr) shr 8];
+        dest^.green := GammaCompressionTab[(GammaExpansionTab[dest^.green] * NativeUInt(256-alphaCorr) + ec.green*alphaCorr) shr 8];
+        dest^.blue := GammaCompressionTab[(GammaExpansionTab[dest^.blue] * NativeUInt(256-alphaCorr) + ec.blue*alphaCorr) shr 8];
       end;
     else
     begin
@@ -902,38 +865,35 @@ begin
       a1f := dest^.alpha * (not calpha);
       a2f := (calpha shl 8) - calpha;
 
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(dest)^{$ENDIF} := ((GammaCompressionTab[(GammaExpansionTab[dest^.red] * a1f +
+      PDWord(dest)^ := ((GammaCompressionTab[(GammaExpansionTab[dest^.red] * a1f +
                          ec.red * a2f + a12m) div a12]) shl TBGRAPixel_RedShift) or
                        ((GammaCompressionTab[(GammaExpansionTab[dest^.green] * a1f +
                          ec.green * a2f + a12m) div a12]) shl TBGRAPixel_GreenShift) or
                        ((GammaCompressionTab[(GammaExpansionTab[dest^.blue] * a1f +
                          ec.blue * a2f + a12m) div a12]) shl TBGRAPixel_BlueShift) or
                        (((a12 + a12 shr 7) shr 8) shl TBGRAPixel_AlphaShift);
-      {$IFDEF BDS}move(_BGRADWord, dest^, sizeof(BGRADWord));{$ENDIF}
     end;
   end;
 end;
 
 procedure FastBlendPixelInline(dest: PBGRAPixel; const c: TBGRAPixel);
 var
-  a1f, a2f, a12, a12m, alphaCorr: BGRANativeUInt;
-  {$IFDEF BDS} _BGRADWord : BGRADWord;{$ENDIF}//#
+  a1f, a2f, a12, a12m, alphaCorr: NativeUInt;
 begin
   case c.alpha of
     0: ;
-    255: {$IFDEF BDS}move(c , dest^, sizeof(TBGRAPixel));{$ELSE}dest^ := c;{$ENDIF}
+    255: dest^ := c;
     else
     begin
       case dest^.alpha of
-        0: {$IFDEF BDS}move(c , dest^, sizeof(TBGRAPixel));{$ELSE}dest^ := c;{$ENDIF}
+        0: dest^ := c;
         255:
         begin
           alphaCorr := c.alpha;
-          if alphaCorr >= 128 then
-            alphaCorr := alphaCorr +1;
-          dest^.red   := (dest^.red   * BGRANativeUInt(256-alphaCorr) + c.red*(alphaCorr+1))   shr 8;
-          dest^.green := (dest^.green * BGRANativeUInt(256-alphaCorr) + c.green*(alphaCorr+1)) shr 8;
-          dest^.blue  := (dest^.blue  * BGRANativeUInt(256-alphaCorr) + c.blue*(alphaCorr+1))  shr 8;
+          if alphaCorr >= 128 then alphaCorr := alphaCorr + 1;
+          dest^.red := (dest^.red * NativeUInt(256-alphaCorr) + c.red*(alphaCorr+1)) shr 8;
+          dest^.green := (dest^.green * NativeUInt(256-alphaCorr) + c.green*(alphaCorr+1)) shr 8;
+          dest^.blue := (dest^.blue * NativeUInt(256-alphaCorr) + c.blue*(alphaCorr+1)) shr 8;
         end;
         else
         begin
@@ -945,11 +905,10 @@ begin
           a1f := dest^.alpha * (not c.alpha);
           a2f := (c.alpha shl 8) - c.alpha;
 
-          {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(dest)^{$ENDIF} :=  (((dest^.red * a1f + c.red * a2f + a12m) div a12) shl TBGRAPixel_RedShift) or
+          PDWord(dest)^ := (((dest^.red * a1f + c.red * a2f + a12m) div a12) shl TBGRAPixel_RedShift) or
                            (((dest^.green * a1f + c.green * a2f + a12m) div a12) shl TBGRAPixel_GreenShift) or
                            (((dest^.blue * a1f + c.blue * a2f + a12m) div a12) shl TBGRAPixel_BlueShift) or
                            (((a12 + a12 shr 7) shr 8) shl TBGRAPixel_AlphaShift);
-          {$IFDEF BDS}move(_BGRADWord, dest^, sizeof(BGRADWord));{$ENDIF}
         end;
       end;
     end;

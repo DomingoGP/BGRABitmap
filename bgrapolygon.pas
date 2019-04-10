@@ -1215,7 +1215,7 @@ var
             if ix1 < densMinx then densMinx := ix1;
             if ix2 > densMaxx then densMaxx := ix2;
 
-            {$IFDEF BDS}FillDWord_{$ELSE}FillWord{$ENDIF}(density[ix1-minx],ix2-ix1+1,256);
+            FillWord(density[ix1-minx],ix2-ix1+1,256);
           end;
         end else
 		  {$DEFINE INCLUDE_FILLDENSITY}

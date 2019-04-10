@@ -288,26 +288,39 @@ begin
     setlength(ABuffer, max(length(ABuffer)*2,ASize));
 end;
 
+
+
+//function BGRA(red, green, blue, alpha: byte): TBGRAPixel; overload;
+//{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
+//begin
+//  {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (red shl TBGRAPixel_RedShift) or
+//                                                    (green shl TBGRAPixel_GreenShift) or
+//                                                    (blue shl TBGRAPixel_BlueShift) or
+//                                                    (alpha shl TBGRAPixel_AlphaShift);
+//  {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+//end;
+
+
 function BGRA(red, green, blue, alpha: byte): TBGRAPixel; overload;
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
 begin
-  {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (red shl TBGRAPixel_RedShift) or
-                                                    (green shl TBGRAPixel_GreenShift) or
-                                                    (blue shl TBGRAPixel_BlueShift) or
-                                                    (alpha shl TBGRAPixel_AlphaShift);
-  {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+  result.fromRGB(red,green,blue,alpha);
 end;
 
 function BGRA(red, green, blue: byte): TBGRAPixel; overload;
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
 begin
-  {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (red shl TBGRAPixel_RedShift) or
-                                                    (green shl TBGRAPixel_GreenShift) or
-                                                    (blue shl TBGRAPixel_BlueShift) or
-                                                    (255 shl TBGRAPixel_AlphaShift);
-
-  {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+  result.fromRGB(red,green,blue,255);
 end;
+
+//function BGRA(red, green, blue: byte): TBGRAPixel; overload;
+//{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
+//begin
+//  {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (red shl TBGRAPixel_RedShift) or
+//                                                    (green shl TBGRAPixel_GreenShift) or
+//                                                    (blue shl TBGRAPixel_BlueShift) or
+//                                                    (255 shl TBGRAPixel_AlphaShift);
+//
+//  {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+//end;
 
 function BGRAPixelEqual(const c1, c2: TBGRAPixel): boolean;
 begin

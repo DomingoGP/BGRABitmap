@@ -4368,7 +4368,7 @@ var
       Visited[StartPos] := Visited[StartPos] or StartMask;
       Visited[EndPos]   := Visited[EndPos] or EndMask;
       if EndPos - StartPos > 1 then
-        FillDWord_(Visited[StartPos + 1], EndPos - StartPos - 1, $FFFFFFFF);
+        FillDWord(Visited[StartPos + 1], EndPos - StartPos - 1, $FFFFFFFF);
     end;
   end;
 
@@ -4398,7 +4398,7 @@ begin
 
     VisitedLineSize := (Width + 31) shr 5;
     SetLength(Visited, VisitedLineSize * Height);
-    FillDWord_(Visited[0], Length(Visited), 0);
+    FillDWord(Visited[0], Length(Visited), 0);
 
     SetLength(Stack, 2);
     StackCount := 0;
@@ -4601,14 +4601,12 @@ procedure TBGRADefaultBitmap.ScanPutPixels(pdest: PBGRAPixel; count: integer;
 var
   i,nbCopy: Integer;
   c, c2: TBGRAPixel;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if (FScanWidth <= 0) or (FScanHeight <= 0) then
   begin
     if mode = dmSet then
     begin
-      {$IFDEF BDS}move(BGRAPixelTransparent , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-      FillDWord_(pdest^, count, {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(BGRAPixelTransparent){$ENDIF});
+      FillDWord(pdest^, count,BGRADWord(BGRAPixelTransparent));
     end;
     exit;
   end;
@@ -4649,8 +4647,7 @@ begin
       for i := 0 to count-1 do
       begin
         c2 := ScanNextPixel;
-        {$IFDEF BDS}move(c2 , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c2){$ENDIF};
+        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor BGRADWord(c2);
         inc(pdest);
       end;
   end;
@@ -5884,7 +5881,6 @@ var xcount,patY,w,n,patY1,patY2m1,patX,patX1: BGRANativeInt;
     pdest: PBGRAPixel;
     delta: BGRAPtrInt;
     actualRect: TRect;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   actualRect := ARect;
   IntersectRect(actualRect, ARect, self.ClipRect);
@@ -5910,8 +5906,8 @@ begin
       begin
         n := 8-patX;
         if n > xcount then n := xcount;
-        {$IFDEF BDS}move(AColorEven , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        FillDWord_(pdest^,n,{$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(AColorEven){$ENDIF});
+        FillDWord(pdest^,n,BGRADWord(AColorEven));
+
         dec(xcount,n);
         inc(pdest,n);
         patX := tx;
@@ -5919,8 +5915,8 @@ begin
       begin
         n := 16-patX;
         if n > xcount then n := xcount;
-        {$IFDEF BDS}move(AColorOdd , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        FillDWord_(pdest^,n,{$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(AColorOdd){$ENDIF});
+          FillDWord(pdest^,n,BGRADWord(AColorOdd));
+
         dec(xcount,n);
         inc(pdest,n);
         patX := 0;

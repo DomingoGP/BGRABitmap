@@ -234,12 +234,10 @@ var MiddleX: Integer;
   TopLine,MiddleLine,BottomLine: array[0..2] of TBGRAPixel;
   PTop,PMiddle,PBottom: PBGRAPixel;
   borderColor: TBGRAPixel;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if Buffers[1] = nil then
   begin
-    {$IFDEF BDS}move(FDestinationBorderColor , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    FillDWord_(ADest^, ACount, {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(FDestinationBorderColor){$ENDIF});
+    FillDWord(ADest^, ACount, BGRADWord(FDestinationBorderColor));
     exit;
   end;
   MiddleX := BufferX+1;
