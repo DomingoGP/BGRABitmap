@@ -2495,5 +2495,6 @@ begin
     ApplyTransform(PointF(dx,dy+dh))+PointF(0.5,0.5), image, currentState.globalAlpha);
 end;
 
+
 end.
 
