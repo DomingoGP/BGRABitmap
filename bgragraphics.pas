@@ -383,6 +383,8 @@ uses
 
 {$IFDEF BDS}
 
+{$DEFINE ASMFILLDWORD}
+{$IFDEF ASMFILLDWORD}
 procedure FillDWord(var x;count : BGRACardinal; value : BGRADWord);assembler;
 asm
   PUSH EDI
@@ -393,7 +395,8 @@ asm
   REP STOSD
   POP EDI
 end;
-{ //pure pascal for debug
+ //pure pascal for debug
+{$ELSE}
 procedure FillDWord(var x;count : BGRACardinal; value : BGRADWord);
 var
   wd:PBGRADWord;
@@ -406,7 +409,8 @@ begin
     Dec(count);
   end;
 end;
-}
+{$ENDIF}
+
 procedure FillWord(var x;count : BGRACardinal; value : BGRADWord);assembler;
 asm
   PUSH EDI
