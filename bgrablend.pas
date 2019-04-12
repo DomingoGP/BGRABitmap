@@ -564,37 +564,14 @@ begin
   end;
 end;
 
-//procedure FillInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer); {$ifdef inline}inline;{$endif}
-////  i : integer;
-//  {$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}
-//begin
-//{ for I := 0 to Count -1 do // run without asm
-//  begin
-//    dest^.blue  := c.blue;
-//    dest^.green := c.green;
-//    dest^.red   := c.red;
-//    dest^.alpha := c.alpha;
-//    inc(dest);
-//  end;}
-//  {$IFDEF BDS}
-//    {$IFDEF FPC}
-//    FillDWord(dest^, Count, BGRADWord(c));
-//    {$ELSE}
-//    Move(c , _BGRADWord, sizeof(BGRADWord));
-//    FillDWord(dest^, Count, _BGRADWord);
-//    {$ENDIF}
-//  {$ELSE}
-//  FillDWord(dest^, Count, BGRADWord(c));
-//  {$ENDIF}
-//end;
-
 procedure FillInline(dest: PBGRAPixel; c: TBGRAPixel; Count: integer); {$ifdef inline}inline;{$endif}
 begin
-{$IFDEF BDS}
-  FillDWord(dest^, Count, PDWord(@c)^);
-{$ELSE}
-  FillDWord(dest^, Count, DWord(c));        //bug? delphi calls implicit := operator     call TBGRAPixel.&op_Implicit
-{$ENDIF}
+//{$IFDEF BDS}
+//  FillDWord(dest^, Count, PDWord(@c)^);
+//{$ELSE}
+//  FillDWord(dest^, Count, DWord(c));        //bug? delphi calls implicit := operator     call TBGRAPixel.&op_Implicit
+//{$ENDIF}
+  FillDWord(dest^, Count, DWord(c));
 end;
 
 

@@ -57,6 +57,13 @@ type
     class Operator{$IFDEF OBJ}={$ELSE}Equal{$ENDIF}(v1, v2: TBGRAPixel): boolean;
     property Intensity: BGRAWord read GetClassIntensity write SetClassIntensity;
     property Lightness: BGRAWord read GetClassLightness write SetClassLightness;
+    {$IFDEF BDS}
+    // Needed for call FillDword(dest,count,DWord(c));  in delphi without this the compiler calls Implicit to convert to TCOLOR.
+    // workarrount  call FillDword(dest,count,PDWord(@c)^);
+    class Operator Explicit(Source: TBGRAPixel): DWord;  inline;
+    {$ENDIF}
+
+
   end;
   TBGRAPixelBuffer = packed array of TBGRAPixel;
 

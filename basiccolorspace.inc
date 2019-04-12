@@ -347,6 +347,31 @@ begin
   result.FromColor(Source);
 end;
 
+
+{$IFDEF BDS}
+// conversion needed for calling FillDWord.  Without this the compiler calls Implicit()->TColor with incorrect color result.
+// OPTIMICED, the compiler don't make any call. because inline in definition.
+class operator TBGRAPixel.Explicit(Source: TBGRAPixel): DWord;
+var
+  wCast:DWord absolute Source;
+begin
+  result := wCast;
+end;
+
+//
+//class operator TBGRAPixel.Explicit(Source: TBGRAPixel): DWord;
+//begin
+//  result := PDWord(@Source)^;
+//end;
+
+// second option, the compiler make call and ret.
+//class operator TBGRAPixel.Explicit(Source: TBGRAPixel): DWord;assembler;
+//asm
+//  // empty   EAX=Source, return the same in EAX. only a ret in assembly.
+//end;
+{$ENDIF}
+
+
 class Operator TBGRAPixel.{$IFDEF OBJ}<>{$ELSE}NotEqual{$ENDIF}(v1, v2: TBGRAPixel): boolean;
 begin
   result := (v1.blue <> v2.blue) and (v1.green <> v2.green) and (v1.red <> v2.red) and (v1.alpha <> v2.alpha);
