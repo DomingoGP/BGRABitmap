@@ -245,7 +245,6 @@ procedure FilterBlurFast(bmp: TBGRACustomBitmap; ABounds: TRect;
   {$ELSE}
   var rgbDivShr1: TExtendedRowValue;
   {$ENDIF}
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}
   begin
     {$IFDEF FASTBLUR_DOUBLE}
     v := round(sum.sumA/sum.aDiv);
@@ -258,11 +257,17 @@ procedure FilterBlurFast(bmp: TBGRACustomBitmap; ABounds: TRect;
     if v > 255 then result.blue := 255 else result.blue := v;
     {$ELSE}
     rgbDivShr1:= sum.rgbDiv shr 1;
-    {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
+    {$IFDEF BDS}
+    result := TBGRAPixel((((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
+    or (((sum.sumR+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_RedShift)
+    or (((sum.sumG+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_GreenShift)
+    or (((sum.sumB+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_BlueShift));
+    {$ELSE}
+    BGRADWord(result) := (((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
     or (((sum.sumR+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_RedShift)
     or (((sum.sumG+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_GreenShift)
     or (((sum.sumB+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_BlueShift);
-    {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+    {$ENDIF}
     {$ENDIF}
   end;
 
@@ -281,14 +286,19 @@ procedure FilterBlurFast(bmp: TBGRACustomBitmap; ABounds: TRect;
 
   function ComputeAverage(const sum: TRowSum): TBGRAPixel; {$ifdef inline}inline;{$endif}
   var rgbDivShr1: BGRANativeUInt;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}
   begin
     rgbDivShr1:= sum.rgbDiv shr 1;
-    {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(result){$ENDIF} := (((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
+{$IFDEF BDS}
+    result := TBGRAPixel((((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
+    or (((sum.sumR+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_RedShift)
+    or (((sum.sumG+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_GreenShift)
+    or (((sum.sumB+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_BlueShift));
+{$ELSE}
+    BGRADWord(result) := (((sum.sumA+sum.aDiv shr 1) div sum.aDiv) shl TBGRAPixel_AlphaShift)
     or (((sum.sumR+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_RedShift)
     or (((sum.sumG+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_GreenShift)
     or (((sum.sumB+rgbDivShr1) div sum.rgbDiv) shl TBGRAPixel_BlueShift);
-    {$IFDEF BDS}move(_BGRADWord , Result, sizeof(BGRADWord));{$ENDIF}
+{$ENDIF}
   end;
 
   {$I blurfast.inc}

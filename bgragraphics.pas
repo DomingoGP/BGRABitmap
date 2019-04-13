@@ -578,6 +578,11 @@ begin
   Result := (rgb shr 16) and $000000ff;
 end;
 
+{$IFDEF BDS}
+// CHANGED ORDER OF B AND R.
+
+{$ENDIF}
+
 function RGBToColor(R, G, B: Byte): TColor;
 begin
    //Result := (B shl 16) or (G shl 8) or R;   //domingo ojo

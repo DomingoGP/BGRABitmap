@@ -290,15 +290,8 @@ uses BGRAUTF8 {$IFDEF FPC} ,bufstream{$ENDIF}
 ;
 
 function IsDWordGreater(p1, p2: PBGRAPixel): boolean;
-{$IFDEF BDS}var _BGRADWord, _BGRADWord2 : BGRADWord;{$ENDIF}//#
 begin
-  {$IFDEF BDS}
-  move(p1^ , _BGRADWord,  sizeof(BGRADWord));
-  move(p2^ , _BGRADWord2, sizeof(BGRADWord));
-  result := _BGRADWord > _BGRADWord2;
-  {$ELSE}//#
-  result := BGRADWord(p1^) > BGRADWord(p2^);
-  {$ENDIF};
+  result := DWord(p1^) > DWord(p2^);
 end;
 
 const

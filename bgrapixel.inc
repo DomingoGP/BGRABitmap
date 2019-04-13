@@ -61,6 +61,7 @@ type
     // Needed for call FillDword(dest,count,DWord(c));  in delphi without this the compiler calls Implicit to convert to TCOLOR.
     // workarrount  call FillDword(dest,count,PDWord(@c)^);
     class Operator Explicit(Source: TBGRAPixel): DWord;  inline;
+    class Operator Explicit(Source: DWord): TBGRAPixel;  inline;
     {$ENDIF}
 
 

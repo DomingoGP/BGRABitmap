@@ -1770,14 +1770,12 @@ end;
 
 procedure TBGRADefaultBitmap.XorPixel(x, y: int32or64; c: TBGRAPixel);
 var
-  p : {$IFDEF BDS}PBGRAPixel;{$ELSE}PBGRADWord;{$ENDIF}//#
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}
+  p : PBGRADWord;
 begin
   if not PtInClipRect(x,y) then exit;
   LoadFromBitmapIfNeeded;
-  p := {$IFDEF BDS}GetScanlineFast(y) +x;{$ELSE}PBGRADWord(GetScanlineFast(y) +x);{$ENDIF}
-  {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-  p^ := BGRADWord(p^) xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c){$ENDIF};
+  p := PBGRADWord(GetScanlineFast(y) +x);
+  p^ := BGRADWord(p^) xor DWord(c);
   InvalidateBitmap;
 end;
 
@@ -2369,14 +2367,12 @@ procedure TBGRADefaultBitmap.XorVertLine(x, y, y2: int32or64; c: TBGRAPixel);
 var
   n, delta: int32or64;
   p: PBGRAPixel;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if not CheckVertLineBounds(x,y,y2,delta) then exit;
   p    := scanline[y] + x;
   for n := y2 - y downto 0 do
   begin
-    {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    PBGRADWord(p)^ := PBGRADWord(p)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c){$ENDIF};
+    PBGRADWord(p)^ := PBGRADWord(p)^ xor DWord(c);
     Inc(p, delta);
   end;
   InvalidateBitmap;
@@ -3630,7 +3626,6 @@ procedure TBGRADefaultBitmap.FillRect(x, y, x2, y2: integer; c: TBGRAPixel;
 var
   yb, tx, delta: integer;
   p: PBGRAPixel;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if not CheckClippedRectBounds(x,y,x2,y2) then exit;
   tx := x2 - x;
@@ -3672,8 +3667,7 @@ begin
         end;
       dmXor:
         begin//#
-        {$IFDEF BDS}move(c , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        if {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(c){$ENDIF} = 0 then exit
+        if DWord(c) = 0 then exit
         else
         for yb := y2 - y downto 0 do
         begin
@@ -4193,7 +4187,6 @@ procedure TBGRADefaultBitmap.ReplaceColor(before, after: TBGRAPixel);
 var
   p: PBGRAPixel;
   n: integer;
-  {$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if before.alpha = 0 then
   begin
@@ -4203,8 +4196,7 @@ begin
   p := Data;
   for n := NbPixels - 1 downto 0 do
   begin
-    {$IFDEF BDS}move(before , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-    if PBGRADWord(p)^ = {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(before){$ENDIF} then
+    if PBGRADWord(p)^ = DWord(before) then
       p^ := after;
     Inc(p);
   end;
@@ -4248,7 +4240,6 @@ procedure TBGRADefaultBitmap.ReplaceColor(ABounds: TRect; before,
   after: TBGRAPixel);
 var p: PBGRAPixel;
   xb,yb,xcount: integer;
-  {$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if before.alpha = 0 then
   begin
@@ -4262,8 +4253,7 @@ begin
     p := ScanLine[yb]+ABounds.Left;
     for xb := xcount-1 downto 0 do
     begin
-      {$IFDEF BDS}move(before , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-      if PBGRADWord(p)^ = {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(before){$ENDIF} then
+      if PBGRADWord(p)^ = DWord(before) then
         p^ := after;
       Inc(p);
     end;
@@ -4762,7 +4752,6 @@ var
   i, delta_source, delta_dest: integer;
   psource, pdest: PBGRAPixel;
   tempPixel: TBGRAPixel;
-  {$IFDEF BDS}_BGRADWord, _BGRADWord2, _BGRADWord3 : BGRADWord;{$ENDIF}//#
 begin
   if (source = nil) or (AOpacity = 0) then exit;
   sourcewidth := Source.Width;
@@ -4908,17 +4897,7 @@ begin
         begin
           for i := copycount - 1 downto 0 do
           begin
-            {$IFDEF BDS}
-            move(pdest   , _BGRADWord , sizeof(BGRADWord));
-            move(psource , _BGRADWord2, sizeof(BGRADWord));
-
-            _BGRADWord3 := _BGRADWord xor _BGRADWord2;
-
-            move(_BGRADWord3 , tempPixel, sizeof(BGRADWord));
-            FastBlendPixelInline(pdest, tempPixel, AOpacity);
-            {$ELSE}
             FastBlendPixelInline(pdest, TBGRAPixel(PBGRADWord(pdest)^ xor PBGRADWord(psource)^), AOpacity);
-            {$ENDIF}
             Inc(pdest);
             Inc(psource);
           end;

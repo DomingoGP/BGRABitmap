@@ -275,12 +275,10 @@ const RedShift = 1;
 
 function GetDimensionValue(APixel: TBGRAPixel; ADimension: TColorDimension): UInt32;
 var v: UInt32;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   case ADimension of
   cdFast: begin
-            {$IFDEF BDS}move(APixel , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-            result := {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(APixel){$ENDIF};
+            result := DWord(APixel);
           end;
   cdRed: result := GammaExpansionTab[APixel.red] shl RedShift;
   cdGreen: result := GammaExpansionTab[APixel.green] shl GreenShift;
@@ -506,29 +504,15 @@ begin
   result := (p^.alpha + p^.alpha shl 8) shl AlphaShift >= v;
 end;
 
-function IsDWordGreater(p1, p2: PBGRAPixel
-  ): boolean;
-{$IFDEF BDS}var _BGRADWord, _BGRADWord2 : BGRADWord;{$ENDIF}//#
+function IsDWordGreater(p1, p2: PBGRAPixel): boolean;
 begin
-  {$IFDEF BDS}
-  move(p1^ , _BGRADWord,  sizeof(BGRADWord));
-  move(p2^ , _BGRADWord2, sizeof(BGRADWord));
-  result := _BGRADWord > _BGRADWord2;
-  {$ELSE}//#
-  result := BGRADWord(p1^) > BGRADWord(p2^);
-  {$ENDIF};
+  result := DWord(p1^) > DWord(p2^);
 end;
 
 function IsDWordGreaterThanValue(p: PBGRAPixel;
   v: UInt32): boolean;
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
-  {$IFDEF BDS}
-  move(p^ , _BGRADWord,  sizeof(BGRADWord));
-  result := _BGRADWord >= v;
-  {$ELSE}//#
-  result := BGRADWord(p^) >= v;
-  {$ENDIF};
+  result := DWord(p^) >= v;
 end;
 
 function GetPixelStrictComparer(ADimension: TColorDimension
@@ -760,11 +744,9 @@ begin
 end;
 
 function TBGRAApproxPalette.IndexOfColor(AValue: TBGRAPixel): integer;
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   result := FTree.ApproximateColorIndex(AValue);
-  {$IFDEF BDS}move(AValue , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-  if (result <> -1) and not (BGRADWord(FColors[result].Color) = {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(AValue){$ENDIF}) then result := -1;
+  if (result <> -1) and not (BGRADWord(FColors[result].Color) = DWord(AValue)) then result := -1;
 end;
 
 function TBGRAApproxPalette.FindNearestColor(AValue: TBGRAPixel): TBGRAPixel;

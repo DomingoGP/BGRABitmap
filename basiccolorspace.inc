@@ -350,7 +350,7 @@ end;
 
 {$IFDEF BDS}
 // conversion needed for calling FillDWord.  Without this the compiler calls Implicit()->TColor with incorrect color result.
-// OPTIMICED, the compiler don't make any call. because inline in definition.
+// OPTIMIZED, the compiler don't make any call. because inline in definition.
 class operator TBGRAPixel.Explicit(Source: TBGRAPixel): DWord;
 var
   wCast:DWord absolute Source;
@@ -370,6 +370,13 @@ end;
 //  // empty   EAX=Source, return the same in EAX. only a ret in assembly.
 //end;
 {$ENDIF}
+
+class Operator TBGRAPixel.Explicit(Source: DWord): TBGRAPixel;
+var
+  wCast:TBGRAPixel absolute Source;
+begin
+  result := wCast;
+end;
 
 
 class Operator TBGRAPixel.{$IFDEF OBJ}<>{$ELSE}NotEqual{$ENDIF}(v1, v2: TBGRAPixel): boolean;

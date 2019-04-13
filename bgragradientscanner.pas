@@ -1646,7 +1646,6 @@ procedure TBGRATextureMaskScanner.ScanPutPixels(pdest: PBGRAPixel;
 var c: TBGRAPixel;
     alpha: byte;
     pmask, ptex: pbgrapixel;
-    {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 
   function GetNext: TBGRAPixel; //@{$ifdef inline}inline;{$endif}
   begin
@@ -1695,8 +1694,7 @@ begin
       dmXor:
         while count > 0 do
         begin//#
-          {$IFDEF BDS}move(GetNextWithGlobal , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-          PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(GetNextWithGlobal){$ENDIF} ;
+          PBGRADWord(pdest)^ := PDWord(pdest)^ xor DWord(GetNextWithGlobal);
           inc(pdest);
           dec(count);
         end;
@@ -1736,8 +1734,7 @@ begin
       dmXor:
         while count > 0 do
         begin//#
-          {$IFDEF BDS}move(GetNext , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-          PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(GetNext){$ENDIF};
+          PBGRADWord(pdest)^ := PDWord(pdest)^ xor DWord(GetNext);
           inc(pdest);
           dec(count);
         end;
@@ -1810,7 +1807,6 @@ procedure TBGRASolidColorMaskScanner.ScanPutPixels(pdest: PBGRAPixel;
 var c: TBGRAPixel;
     alpha: byte;
     pmask: pbgrapixel;
-    {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 
   function GetNext: TBGRAPixel; //@{$ifdef inline}inline;{$endif}
   begin
@@ -1844,8 +1840,7 @@ begin
     dmXor:
       while count > 0 do
       begin//#
-        {$IFDEF BDS}move(GetNext , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(GetNext){$ENDIF};
+        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor DWord(GetNext);
         inc(pdest);
         dec(count);
       end;
@@ -1919,7 +1914,6 @@ procedure TBGRAOpacityScanner.ScanPutPixels(pdest: PBGRAPixel; count: integer;
   mode: TDrawMode);
 var c: TBGRAPixel;
     ptex: pbgrapixel;
-    {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 
   function GetNext: TBGRAPixel; //@{$ifdef inline}inline;{$endif}
   begin
@@ -1952,8 +1946,7 @@ begin
     dmXor:
       while count > 0 do
       begin//#
-        {$IFDEF BDS}move(GetNext , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(GetNext){$ENDIF};
+        PBGRADWord(pdest)^ := PBGRADWord(pdest)^ xor DWord(GetNext);
         inc(pdest);
         dec(count);
       end;
