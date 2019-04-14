@@ -679,8 +679,6 @@ var
   temp: BGRALongWord;
   temp64: BGRAQWord;
   oddN: boolean;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}
-  {$IFDEF BDS}_qword : BGRAQWord;{$ENDIF}//#
 begin
   {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
   if ACount <= 0 then exit;
@@ -690,10 +688,9 @@ begin
     while ACount > 0 do
     begin
       temp64 := PBGRAQWord(ASource)^;
-      {$IFDEF BDS}_qword{$ELSE}PBGRAQWord(ADest)^{$ENDIF} := ((temp64 and BlueMask64) shl (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
+      PBGRAQWord(ADest)^ := ((temp64 and BlueMask64) shl (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
                     ((temp64 and RedMask64) shr (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
                     (temp64 and GreenAndAlphaMask64);
-      {$IFDEF BDS}move(_qword , ADest^, sizeof(BGRAQWord));{$ENDIF}
       dec(ACount);
       inc(ASource,2);
       inc(ADest,2);
@@ -701,10 +698,9 @@ begin
     while ACount > 0 do
     begin
       temp64 := PBGRAQWord(ASource)^;
-      {$IFDEF BDS}_qword{$ELSE}PBGRAQWord(ADest)^{$ENDIF} := ((temp64 and BlueMask64) shr (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
+      PBGRAQWord(ADest)^ := ((temp64 and BlueMask64) shr (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
                     ((temp64 and RedMask64) shl (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
                     (temp64 and GreenAndAlphaMask64);
-      {$IFDEF BDS}move(_qword , ADest^, sizeof(BGRAQWord));{$ENDIF}
       dec(ACount);
       inc(ASource,2);
       inc(ADest,2);
@@ -714,17 +710,15 @@ begin
     if TBGRAPixel_RedShift > TBGRAPixel_BlueShift then
     begin
       temp := PBGRADWord(ASource)^;
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(ADest)^{$ENDIF} := ((temp and BlueMask) shl (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
+      PBGRADWord(ADest)^ := ((temp and BlueMask) shl (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
             ((temp and RedMask) shr (TBGRAPixel_RedShift-TBGRAPixel_BlueShift)) or
             (temp and GreenAndAlphaMask);
-      {$IFDEF BDS}move(_BGRADWord , ADest^, sizeof(BGRADWord));{$ENDIF}
     end else
     begin
       temp := PBGRADWord(ASource)^;
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(ADest)^{$ENDIF} := ((temp and BlueMask) shr (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
+      PBGRADWord(ADest)^ := ((temp and BlueMask) shr (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
             ((temp and RedMask) shl (TBGRAPixel_BlueShift-TBGRAPixel_RedShift)) or
             (temp and GreenAndAlphaMask);
-      {$IFDEF BDS}move(_BGRADWord , ADest^, sizeof(BGRADWord));{$ENDIF}
     end;
   end;
   {$IFDEF FPC}{$POP}{$ENDIF}
@@ -735,7 +729,6 @@ end;
 class procedure TBGRAFilterScannerNegative.ComputeFilterAt(
   ASource: PBGRAPixel; ADest: PBGRAPixel; ACount: integer;
   AGammaCorrection: boolean);
-  {$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   if ADest = ASource then
   begin
@@ -756,9 +749,11 @@ begin
       begin
         if ADest^.alpha <> 0 then
         begin//#
-          {$IFDEF BDS}move(ADest^ , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-          {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(ADest^){$ENDIF}  := {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(ADest^){$ENDIF}  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift));
-          {$IFDEF BDS}move(_BGRADWord , ADest^, sizeof(BGRADWord));{$ENDIF}
+          {$IFDEF BDS}
+          ADest^  := TBGRAPixel(BGRADWord(ADest^)  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift)));
+          {$ELSE}
+          BGRADWord(ADest^)  := BGRADWord(ADest^)  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift));
+          {$ENDIF}
         end;
         Inc(ADest);
         dec(ACount);
@@ -787,9 +782,11 @@ begin
           ADest^ := BGRAPixelTransparent
         else
         begin//#
-          {$IFDEF BDS}move(ASource^ , _BGRADWord, sizeof(BGRADWord));{$ENDIF}
-          {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(ADest^){$ENDIF}  := {$IFDEF BDS}_BGRADWord{$ELSE}BGRADWord(ASource^){$ENDIF}  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift));
-          {$IFDEF BDS}move(_BGRADWord , ADest^, sizeof(BGRADWord));{$ENDIF}
+          {$IFDEF BDS}
+          ADest^  := TBGRAPixel(BGRADWord(ASource^)  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift)));
+          {$ELSE}
+          BGRADWord(ADest^)  := BGRADWord(ASource^)  xor ($ffffffff and not ($ff shl TBGRAPixel_AlphaShift));
+          {$ENDIF}
         end;
         inc(ASource);
         Inc(ADest);

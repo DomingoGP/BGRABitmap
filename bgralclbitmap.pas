@@ -178,7 +178,7 @@ procedure CopyFrom24Bit(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; so
 begin
   while count > 0 do
   begin
-    {$IFDEF BDS}move(psrc^, pdest^, sizeof(BGRAWord));{$ELSE}PBGRAWord(pdest)^ := PBGRAWord(psrc)^;{$ENDIF}
+    PBGRAWord(pdest)^ := PBGRAWord(psrc)^;
     (PByte(pdest)+2)^ := (psrc+2)^;
     pdest^.alpha := DefaultOpacity;
     inc(psrc,sourcePixelSize);
@@ -202,15 +202,14 @@ begin
 end;
 
 procedure CopyFromARGB_KeepAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; {%H-}defaultOpacity: byte);
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   while count > 0 do
   begin
-    {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := ((PByte(psrc)+3)^ shl TBGRAPixel_BlueShift) or
+    PBGRADWord(pdest)^ := ((PByte(psrc)+3)^ shl TBGRAPixel_BlueShift) or
                       ((PByte(psrc)+2)^ shl TBGRAPixel_GreenShift) or
                       ((PByte(psrc)+1)^ shl TBGRAPixel_RedShift) or
                       (PByte(psrc)^ shl TBGRAPixel_AlphaShift);
-    {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
+
     dec(count);
     inc(pdest);
     inc(psrc, sourcePixelSize);
@@ -218,15 +217,13 @@ begin
 end;
 
 procedure CopyFromARGB_SetAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; defaultOpacity: byte);
-{$IFDEF BDS}var _BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   while count > 0 do
   begin
-    {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := ((PByte(psrc)+3)^ shl TBGRAPixel_BlueShift) or
+    PBGRADWord(pdest)^ := ((PByte(psrc)+3)^ shl TBGRAPixel_BlueShift) or
                       ((PByte(psrc)+2)^ shl TBGRAPixel_GreenShift) or
                       ((PByte(psrc)+1)^ shl TBGRAPixel_RedShift) or
                       (DefaultOpacity shl TBGRAPixel_AlphaShift);
-    {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
     inc(psrc, sourcePixelSize);
     inc(pdest);
     dec(count);
@@ -242,28 +239,25 @@ var
   sourceval: BGRANativeUInt;
   alphaValue: BGRANativeUInt;
   OpacityOrMask: BGRANativeUInt;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   OpacityOrMask := DefaultOpacity shl TBGRAPixel_AlphaShift;
   while count > 0 do
   begin
-    {$IFDEF BDS}move(psrc^, sourceval, sizeof(BGRALongWord));{$ELSE}sourceval := PBGRALongWord(psrc)^;{$ENDIF}
+    sourceval := PBGRALongWord(psrc)^;
 
     alphaValue := {$IFDEF ENDIAN_LITTLE}sourceval and $ff{$ELSE}sourceval shr 24{$ENDIF};
     if (alphaValue = 0) and ((sourceval and ARGB_ColorMask) <> 0) then //if not black but transparent
     begin
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := (((sourceval shr ARGB_BlueShift) and $ff) shl TBGRAPixel_BlueShift) or
+      PBGRADWord(pdest)^ := (((sourceval shr ARGB_BlueShift) and $ff) shl TBGRAPixel_BlueShift) or
                         (((sourceval shr ARGB_GreenShift) and $ff) shl TBGRAPixel_GreenShift) or
                         (((sourceval shr ARGB_RedShift) and $ff) shl TBGRAPixel_RedShift) or
                         OpacityOrMask;
-      {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
     end else
     begin
-      {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := (((sourceval shr ARGB_BlueShift) and $ff) shl TBGRAPixel_BlueShift) or
+      PBGRADWord(pdest)^ := (((sourceval shr ARGB_BlueShift) and $ff) shl TBGRAPixel_BlueShift) or
                         (((sourceval shr ARGB_GreenShift) and $ff) shl TBGRAPixel_GreenShift) or
                         (((sourceval shr ARGB_RedShift) and $ff) shl TBGRAPixel_RedShift) or
                         (alphaValue shl TBGRAPixel_AlphaShift);
-      {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
     end;
     dec(count);
     inc(pdest);
@@ -286,7 +280,7 @@ begin
   begin
     while count > 0 do
     begin
-      {$IFDEF BDS}move(psrc^, pdest^, sizeof(BGRADWord)){$ELSE}PBGRADWord(pdest)^ := PBGRADWord(psrc)^{$ENDIF};
+      PBGRADWord(pdest)^ := PBGRADWord(psrc)^;
       dec(count);
       inc(pdest);
       inc(psrc, sourcePixelSize);
@@ -296,16 +290,15 @@ end;
 
 procedure CopyFrom32Bit_SwapRedBlue_KeepAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; {%H-}defaultOpacity: byte);
 var srcValue: BGRANativeUInt;
-{$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
+
 begin
   while count > 0 do
   begin
-    {$IFDEF BDS}move(psrc^, srcValue, sizeof(BGRADWord));{$ELSE}srcValue := PBGRADWord(psrc)^;{$ENDIF}
+    srcValue := PBGRADWord(psrc)^;
 
-    {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := (srcValue and not (BGRA_RedMask or BGRA_BlueMask))
+    PBGRADWord(pdest)^ := (srcValue and not (BGRA_RedMask or BGRA_BlueMask))
                    or (((srcValue and BGRA_RedMask) shr TBGRAPixel_RedShift) shl TBGRAPixel_BlueShift)
                    or (((srcValue and BGRA_BlueMask) shr TBGRAPixel_BlueShift) shl TBGRAPixel_RedShift);
-    {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
     dec(count);
     inc(pdest);
     inc(psrc, sourcePixelSize);
@@ -315,13 +308,11 @@ end;
 procedure CopyFrom32Bit_SetAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; defaultOpacity: byte);
 var
   OpacityOrMask: BGRANativeUInt;
-  {$IFDEF BDS}_BGRADWord : BGRADWord;{$ENDIF}//#
 begin
   OpacityOrMask := DefaultOpacity shl TBGRAPixel_AlphaShift;
   while count > 0 do
   begin
-    {$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(pdest)^{$ENDIF} := ({$IFDEF BDS}_BGRADWord{$ELSE}PBGRADWord(psrc)^{$ENDIF} and not BGRA_AlphaMask) or OpacityOrMask;
-    {$IFDEF BDS}move(_BGRADWord, pdest^, sizeof(BGRADWord));{$ENDIF}
+    PBGRADWord(pdest)^ := (PBGRADWord(psrc)^ and not BGRA_AlphaMask) or OpacityOrMask;
     inc(psrc, sourcePixelSize);
     inc(pdest);
     dec(count);
@@ -345,21 +336,18 @@ end;
 procedure CopyFrom32Bit_ReplaceZeroAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; defaultOpacity: byte);
 var sourceval: BGRANativeUInt;
   OpacityOrMask : BGRANativeUInt;
-  {$IFDEF BDS}_BGRALongWord : BGRALongWord;{$ENDIF}//#
 begin
   OpacityOrMask := DefaultOpacity shl TBGRAPixel_AlphaShift;
   while count > 0 do
   begin
-    {$IFDEF BDS}move(psrc^, sourceval, sizeof(BGRALongWord));{$ELSE}sourceval := PBGRALongWord(psrc)^;{$ENDIF}
+    sourceval := PBGRALongWord(psrc)^;
     if ((sourceVal shr TBGRAPixel_AlphaShift) and $ff = 0) and ((sourceval and BGRA_ColorMask) <> 0) then //if not black but transparent
     begin
-      {$IFDEF BDS}_BGRALongWord{$ELSE}PBGRALongWord(pdest)^{$ENDIF} := (sourceval and BGRA_ColorMask) or OpacityOrMask; //use default opacity
-      {$IFDEF BDS}move(_BGRALongWord, pdest^, sizeof(BGRALongWord));{$ENDIF}
+      PBGRALongWord(pdest)^ := (sourceval and BGRA_ColorMask) or OpacityOrMask; //use default opacity
     end
     else
     begin
-      {$IFDEF BDS}move(psrc^, _BGRALongWord, sizeof(PBGRALongWord));{$ELSE}PBGRALongWord(pdest)^ := PBGRALongWord(psrc)^;{$ENDIF}
-      {$IFDEF BDS}move(_BGRALongWord, pdest^, sizeof(BGRALongWord));{$ENDIF}
+      PBGRALongWord(pdest)^ := PBGRALongWord(psrc)^;
     end;
     dec(count);
     inc(pdest);
@@ -370,26 +358,23 @@ end;
 procedure CopyFrom32Bit_SwapRedBlue_ReplaceZeroAlpha(psrc: PByte; pdest: PBGRAPixel; count: BGRANativeInt; sourcePixelSize: BGRAPtrInt; defaultOpacity: byte);
 var sourceval: BGRANativeUInt;
   OpacityOrMask : BGRANativeUInt;
-  {$IFDEF BDS}_BGRALongWord : BGRALongWord;{$ENDIF}//#
 begin
   OpacityOrMask := DefaultOpacity shl TBGRAPixel_AlphaShift;
   while count > 0 do
   begin
-    {$IFDEF BDS}move(psrc^, sourceval, sizeof(BGRALongWord));{$ELSE}sourceval := PBGRALongWord(psrc)^;{$ENDIF}
+    sourceval := PBGRALongWord(psrc)^;
     if ((sourceVal shr TBGRAPixel_AlphaShift) and $ff = 0) and ((sourceval and BGRA_ColorMask) <> 0) then //if not black but transparent
     begin
-      {$IFDEF BDS}_BGRALongWord{$ELSE}PBGRALongWord(pdest)^{$ENDIF} := (((sourceval and BGRA_RedMask) shr TBGRAPixel_RedShift) shl TBGRAPixel_BlueShift)
+      PBGRALongWord(pdest)^ := (((sourceval and BGRA_RedMask) shr TBGRAPixel_RedShift) shl TBGRAPixel_BlueShift)
                         or (((sourceval and BGRA_BlueMask) shr TBGRAPixel_BlueShift) shl TBGRAPixel_RedShift)
                         or (sourceval and BGRA_GreenMask)
                         or OpacityOrMask;
-      {$IFDEF BDS}move(_BGRALongWord, pdest^, sizeof(BGRALongWord));{$ENDIF}
     end
     else
     begin
-      {$IFDEF BDS}_BGRALongWord{$ELSE}PBGRALongWord(pdest)^{$ENDIF} := (((sourceval and BGRA_RedMask) shr TBGRAPixel_RedShift) shl TBGRAPixel_BlueShift)
+      PBGRALongWord(pdest)^ := (((sourceval and BGRA_RedMask) shr TBGRAPixel_RedShift) shl TBGRAPixel_BlueShift)
                         or (((sourceval and BGRA_BlueMask) shr TBGRAPixel_BlueShift) shl TBGRAPixel_RedShift)
                         or (sourceval and (BGRA_GreenMask or BGRA_AlphaMask));
-      {$IFDEF BDS}move(_BGRALongWord, pdest^, sizeof(BGRALongWord));{$ENDIF}
     end;
     dec(count);
     inc(pdest);

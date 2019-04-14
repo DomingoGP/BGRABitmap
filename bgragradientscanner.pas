@@ -1118,12 +1118,10 @@ begin
 end;
 
 function TBGRAGradientScanner.GetGradientExpandedColor(a: single): TExpandedPixel;
-{$IFDEF BDS}var _qword : BGRAQWord;{$ENDIF}
 begin
   if a = Emptysingle then
   begin
-    {$IFDEF BDS}_qword{$ELSE}BGRAQWord(result){$ENDIF} := 0;
-    {$IFDEF BDS}move(_qword , Result, sizeof(BGRAQWord));{$ENDIF}
+    result := 0;
   end
   else
   begin

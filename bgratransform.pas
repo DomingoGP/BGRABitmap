@@ -1978,7 +1978,9 @@ begin
   {$IFDEF OBJ}
   FScanAtFunc := @FScanner.ScanAt;
   {$ELSE}
-  FScanAtFunc := TBGRACustomBitmap(FScanner.GetInstance).ScanAt;
+//  FScanAtFunc := TBGRACustomBitmap(FScanner.GetInstance).ScanAt;
+  FScanAtFunc := TBGRACustomScanner(FScanner.GetInstance).ScanAt;
+
   {$ENDIF}
   FCenter := ACenter;
   FTurn := ATurn;

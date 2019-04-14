@@ -487,9 +487,9 @@ begin
     scan.ScanPutPixels(pdest,count,mode) else
   begin
     {$IFDEF OBJ}
-    scanNextFunc :=@scan.ScanNextPixel;     //dgp
+    scanNextFunc :=@scan.ScanNextPixel;
     {$ELSE}
-    scanNextFunc := TBGRACustomBitmap(scan.GetInstance).ScanNextPixel;
+    scanNextFunc := TBGRACustomScanner(scan.GetInstance).ScanNextPixel;
     {$ENDIF}
     case mode of
       dmLinearBlend:
