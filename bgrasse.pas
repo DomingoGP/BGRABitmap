@@ -280,8 +280,9 @@ end;
 
 class operator TPoint3D_128.{$IFDEF OBJ}<>{$ELSE}NotEqual{$ENDIF}(const v1,v2: TPoint3D_128): boolean;
 begin
-  result := (v1.x<>v2.x) and (v1.y<>v2.y) and (v1.z<>v2.z);
+  result := (v1.x<>v2.x) or (v1.y<>v2.y) or (v1.z<>v2.z);
 end;
+
 
 procedure ClearPoint3D_128(out v: TPoint3D_128);
 {$ifdef cpux86_64} assembler;

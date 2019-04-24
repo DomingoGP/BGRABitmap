@@ -24,7 +24,12 @@ type
     function Add(pt: TPoint3D_128): IBGRAVertex3D; overload;
     function Add(pt: TPoint3D_128; normal: TPoint3D_128): IBGRAVertex3D; overload;
     function Add(const coords: array of single): arrayOfIBGRAVertex3D; overload;
+    {$IFDEF BDS}
+    function Add(const pts: arrayofTPoint3D): arrayOfIBGRAVertex3D; overload;
+    {$ELSE}
     function Add(const pts: array of TPoint3D): arrayOfIBGRAVertex3D; overload;
+    {$ENDIF}
+
     function Add(const pts: array of TPoint3D_128): arrayOfIBGRAVertex3D; overload;
     procedure Add(const pts: array of IBGRAVertex3D); overload;
     procedure Add(AVertex: IBGRAVertex3D); overload;
@@ -293,7 +298,12 @@ end;
 
 function TBGRAPart3D.Add(const coords: array of single
   ): arrayOfIBGRAVertex3D;
-var pts: array of TPoint3D;
+var
+{$IFDEF BDS}
+pts: arrayofTPoint3D;
+{$ELSE}
+pts: array of TPoint3D;
+{$ENDIF}
     CoordsIdx: integer;
     i: Integer;
 begin
@@ -309,7 +319,11 @@ begin
   result := Add(pts);
 end;
 
+{$IFDEF BDS}
+function TBGRAPart3D.Add(const pts: arrayofTPoint3D): arrayOfIBGRAVertex3D;
+{$ELSE}
 function TBGRAPart3D.Add(const pts: array of TPoint3D): arrayOfIBGRAVertex3D;
+{$ENDIF}
 var
   i: Integer;
 begin

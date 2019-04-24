@@ -287,7 +287,13 @@ type
   end;
 
   arrayOfIBGRAVertex3D = array of IBGRAVertex3D;
+
+  {$IFDEF BDS}
+  arrayOfTPoint3D = array of TPoint3D;
+  {$ENDIF}
+
   TVertex3DCallback = procedure(AVertex: IBGRAVertex3D) of object;
+
 
   { IBGRAPart3D }
 
@@ -303,7 +309,13 @@ type
     function AddNormal(pt: TPoint3D): IBGRANormal3D; overload;
     function AddNormal(pt: TPoint3D_128): IBGRANormal3D; overload;
     function Add(const coords: array of single): arrayOfIBGRAVertex3D; overload;
+
+    {$IFDEF BDS}
+    function Add(const pts:arrayOfTPoint3D ): arrayOfIBGRAVertex3D; overload;
+    {$ELSE}
     function Add(const pts: array of TPoint3D): arrayOfIBGRAVertex3D; overload;
+    {$ENDIF}
+
     function Add(const pts_128: array of TPoint3D_128): arrayOfIBGRAVertex3D; overload;
     procedure Add(const pts: array of IBGRAVertex3D); overload;
     procedure Add(AVertex: IBGRAVertex3D); overload;

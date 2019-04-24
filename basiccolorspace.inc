@@ -379,9 +379,15 @@ begin
 end;
 
 
+//class Operator TBGRAPixel.{$IFDEF OBJ}<>{$ELSE}NotEqual{$ENDIF}(v1, v2: TBGRAPixel): boolean;
+//begin
+//  result := (v1.blue <> v2.blue) and (v1.green <> v2.green) and (v1.red <> v2.red) and (v1.alpha <> v2.alpha);
+//end;
+
+//dgp
 class Operator TBGRAPixel.{$IFDEF OBJ}<>{$ELSE}NotEqual{$ENDIF}(v1, v2: TBGRAPixel): boolean;
 begin
-  result := (v1.blue <> v2.blue) and (v1.green <> v2.green) and (v1.red <> v2.red) and (v1.alpha <> v2.alpha);
+  result := (v1.blue <> v2.blue) or (v1.green <> v2.green) or (v1.red <> v2.red) or (v1.alpha <> v2.alpha);
 end;
 
 class Operator TBGRAPixel.{$IFDEF OBJ}={$ELSE}Equal{$ENDIF}(v1, v2: TBGRAPixel): boolean;
